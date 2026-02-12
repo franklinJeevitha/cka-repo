@@ -1,0 +1,20 @@
+# Kubernetes sensitive files
+*.kubeconfig
+*kubeconfig.yaml
+*.pem
+*.key
+admin.conf
+
+# Temporary YAMLs (if you use names like temp.yaml)
+temp.yaml
+debug-pod.yaml
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
