@@ -1,0 +1,20 @@
+Static pods are a specialized type of Kubernetes pod that are managed directly by the Kubelet daemon on a specific node, rather than by the Kubernetes API server or scheduler. This design makes them essential for bootstrapping and running critical control plane components like the API server, etcd, and controller manager. 
+static pod names end with node names.
+
+Priority class - Object used to denote a name with a integer value which denotes the priority of the pod. 
+Preemption: If a high-priority pod cannot be scheduled due to insufficient resources, the scheduler can evict (preempt) one or more lower-priority pods from a node to make room for the higher-priority pod. The evicted pods go back into a pending state.
+globalDefault: An optional field that, if set to true, applies this PriorityClass to any pod that does not specify a priorityClassName. Only one PriorityClass can be the global default.
+preemptionPolicy: An optional field that can be set to PreemptLowerPriority (default) or Never, controlling whether a pod can cause the eviction of other pods. 
+
+Custom Schedulers: You can deploy additional schedulers as pods or deployments within the cluster. Each must be given a unique name. These custom schedulers can be built from scratch or be a customized instance of the standard kube-scheduler binary configured with different profiles or plugins.
+Pod Assignment: To use a specific scheduler, you must specify its name in the spec.schedulerName field of the pod''s manifest.
+Pods without this field explicitly set will be scheduled by the default-scheduler.
+Leader Election: In a high-availability setup with multiple replicas of a custom scheduler, leader election should be enabled to ensure only one instance is active at a time to prevent conflicts.
+
+Scheduler profiles work by customizing the kube-scheduler''s decision-making process, which involves a series of stages: 
+Filtering: Eliminates nodes that cannot meet a pod''s requirements (e.g., resource requests, node selectors).
+Scoring: Ranks the remaining, feasible nodes based on various criteria (e.g., balanced resource usage, specific hardware).
+Binding: Assigns the pod to the highest-scoring node. 
+Each stage exposes "extension points" where plugins can be enabled, disabled, or configured to implement specific scheduling logic
+
+A Kubernetes admission controller is a plugin that intercepts requests to the Kubernetes API server after authentication and authorization but before the object is persisted to etcd. It acts as a "gatekeeper" to enforce policies, ensure security compliance, and automate configuration management within the cluster. 
