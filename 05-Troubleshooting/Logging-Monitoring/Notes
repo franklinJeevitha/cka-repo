@@ -1,0 +1,28 @@
+# Metric Server
+
+The Kubernetes Metrics Server is a cluster add-on that collects CPU and memory usage data from all nodes and pods, exposing these metrics through the Kubernetes API. It is a crucial component for enabling built-in autoscaling features like the Horizontal Pod Autoscaler (HPA) and Vertical Pod Autoscaler (VPA), and for using the kubectl top command. 
+
+Deploy metrric server
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+The kubectl top command is used to display the resource (CPU/memory) usage of nodes and pods in a Kubernetes cluster. This command requires the Metrics Server to be installed and running in your cluster
+kubectl top node
+kubectl top node <node_name>
+kubectl top pod --all-namespaces
+kubectl top pod <pod_name> --namespace=<namespace_name>
+kubectl top pod --sort-by=cpu
+# or
+kubectl top pod --sort-by=memory
+kubectl top pod <pod_name> --containers
+kubectl top pod -l app=nginx
+
+View only the top 5 CPU-consuming pods:
+kubectl top pod --sort-by=cpu | head -n 6 # use '6' to include the header row
+
+The kubectl logs command is the primary tool for viewing the standard output (stdout) and standard error (stderr) streams of containers in a Kubernetes pod. It is essential for real-time debugging and troubleshooting applications within a Kubernetes cluster.
+
+--Specify container name for multi containers pod
+kubectl logs <pod-name> -c <container-name>
+
+
+
