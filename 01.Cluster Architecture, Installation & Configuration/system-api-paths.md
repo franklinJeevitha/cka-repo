@@ -57,7 +57,7 @@ This is a special group. It is **not** part of the core API server binary.
 
 ---
 
-## 📝 Updated API Mapping for your Notes
+## 📝 Updated API Mapping
 
 | Path / Group | Purpose | Example Tool |
 | --- | --- | --- |
