@@ -89,7 +89,7 @@ spec:
 ## 💡 Practical Engineering Tips
 
 * **Static vs. Dynamic Provisioning:** * **Static:** You manually create 10 PVs. (What we just did).
-    * **Dynamic:** You use a **StorageClass**. When a user creates a PVC, Kubernetes automatically calls the AWS/GCP API to create a disk and a PV on the fly. This is the 2026 standard.
+    * **Dynamic:** You use a **StorageClass**. When a user creates a PVC, Kubernetes automatically calls the AWS/GCP API to create a disk and a PV on the fly. 
 * **The "Pending" PVC:** If your PVC is stuck in `Pending`, check the `kubectl describe pvc`. Common reasons:
     1.  No PV matches the capacity (e.g., PVC asks for 10Gi, but your biggest PV is 5Gi).
     2.  Access modes don't match.
