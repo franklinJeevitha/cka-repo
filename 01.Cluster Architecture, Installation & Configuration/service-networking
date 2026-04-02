@@ -1,0 +1,89 @@
+**Services** are how Kubernetes provides a stable "Front Door" (DNS name and IP) to a group of ever-changing, ephemeral Pods.
+
+---
+
+# 🏗️ Kubernetes Services & Kube-Proxy
+
+A **Service** is an abstraction that defines a logical set of Pods and a policy by which to access them. While Pods have their own IPs (via CNI), those IPs change every time a Pod restarts. A Service IP (ClusterIP) is **permanent**.
+
+
+
+---
+
+## 1. Service Types: ClusterIP vs. NodePort
+
+### **A. ClusterIP (Default)**
+* **What it is:** A stable Virtual IP (VIP) reachable **only from within** the cluster.
+* **Use Case:** Internal communication (e.g., a Frontend talking to a Backend).
+* **How it works:** CoreDNS maps the service name to this VIP. When a Pod hits the VIP, `kube-proxy` intercepts it and sends it to a real Pod IP.
+
+### **B. NodePort**
+* **What it is:** Exposes the service on a specific port (usually `30000-32767`) on **every Node's IP**.
+* **Use Case:** External access when you don't have a Cloud Load Balancer.
+* **How it works:** If you hit `<Node-IP>:<NodePort>`, the traffic is routed to the internal ClusterIP, which then goes to the Pod.
+
+
+
+---
+
+## 2. The Brain: Kube-Proxy
+**Kube-Proxy** is a process that runs on every node. It watches the API Server for new Services and Endpoints (Pod IPs). Its job is to "program" the node's network to handle Service traffic.
+
+It has operated in three historical modes:
+
+### **Mode 1: Userspace (Legacy)**
+* **How it works:** Kube-proxy stands in the middle. Traffic goes: `Kernel -> Kube-Proxy (Userspace) -> Kernel -> Pod`.
+* **Cons:** Extremely slow. Moving data between Kernel space and User space causes massive CPU overhead. **Do not use in 2026.**
+
+### **Mode 2: iptables (The Standard)**
+* **How it works:** Kube-proxy creates complex **iptables** rules in the Linux Kernel. 
+* **Mechanism:** When a packet hits the ClusterIP, the Kernel's `nat` table intercepts it and performs **DNAT** (Destination NAT) to a random healthy Pod IP.
+* **Pros:** Faster than userspace; no data leaves the Kernel.
+* **Cons:** Doesn't scale well. If you have 5,000 services, the linear list of iptables rules becomes massive and slow to update.
+
+
+
+### **Mode 3: IPVS (High Performance)**
+* **How it works:** Uses the Linux **IPVS (IP Virtual Server)** transport-layer load balancing.
+* **Mechanism:** Instead of a long list of rules, it uses a **Hash Table**.
+* **Pros:** * Much faster for large clusters (1,000+ services).
+    * Supports advanced load-balancing algorithms (Round Robin, Least Connection, etc.).
+    * Re-programming the network is near-instant.
+
+---
+
+## 3. Comparing the Modes
+
+| Feature | Userspace | iptables | IPVS |
+| :--- | :--- | :--- | :--- |
+| **Performance** | Low | Medium/High | Very High |
+| **Complexity** | Simple | High (Complex rules) | Low (Clean Hash Table) |
+| **Algorithms** | Round Robin | Random | RR, LC, DH, SH, etc. |
+| **Scalability** | Poor | Linear (Slows down) | Constant (O(1)) |
+
+---
+
+## 💡 Practical Engineering & Troubleshooting
+
+### **The "No Endpoints" Trap**
+If you can reach the ClusterIP but get a "Connection Refused," check the **Endpoints**:
+```bash
+kubectl get endpoints <service-name>
+```
+If the list is `<none>`, your Service **Selector** (labels) doesn't match your Pod labels. The Service is a "Front Door" with no room behind it.
+
+### **Check kube-proxy Mode**
+To see which mode your cluster is using:
+```bash
+# Check the logs of a kube-proxy pod
+kubectl logs -n kube-system <kube-proxy-pod-name> | grep "Using"
+```
+
+### **Testing the Rules**
+On a node, you can actually see the `iptables` rules that `kube-proxy` created:
+```bash
+# List the NAT rules created for services
+sudo iptables -t nat -L KUBE-SERVICES | column -t
+```
+
+---
