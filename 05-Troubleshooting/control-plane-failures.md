@@ -50,7 +50,7 @@ If etcd is failing, the API server will be unable to start or process write requ
       --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
       --key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
       endpoint health
-    ```
+```
 
 ### **C. kube-scheduler & kube-controller-manager**
 If these fail, pods will stay in `Pending` state or deployments won't pick up changes.
@@ -66,7 +66,7 @@ The kubelet is the agent on each node. If it fails on a master node, the Static 
 ```bash
     systemctl status kubelet
     journalctl -u kubelet -n 100 # Look for "failed to pull" or "permission denied"
-    ```
+```
 
 
 
