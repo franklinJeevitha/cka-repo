@@ -38,7 +38,7 @@ If the API server is down, `kubectl` commands will return "Connection Refused."
     tail -f /var/log/pods/kube-system_kube-apiserver...
     ```
 
-### **B. etcd (The Brain)**
+### **B. etcd **
 If etcd is failing, the API server will be unable to start or process write requests.
 *   **Common Causes:** Disk space full (database quota exceeded), network latency between members, or certificate mismatch.
 *   **Investigation:**
