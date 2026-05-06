@@ -79,5 +79,3 @@ kubectl debug -it <pod-name> --image=nicolaka/netshoot --target=<container-name>
 | **ExternalName** | External DNS resolution and CNAME records. |
 
 ---
-
-```
